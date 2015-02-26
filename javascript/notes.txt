@@ -1,0 +1,10 @@
+Hand:
+* pinchStrength [app]
+* sphereCenter, sphereRadius [app]
+* grabStrength [app]
+* direction - direction from the palm position toward the fingers
+
+* palmPosition (stabilizedPalmPosition), palmVelocity, palmNormal [app/info]
+* confidence [info]
+* roll(), pitch(), yaw() [info]o
+* valid [info]
