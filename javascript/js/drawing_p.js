@@ -30,7 +30,9 @@ $(function() {
 	var pointerH = new PointerHanlder(canvasElement);
 	var touchH = new TouchHandler(fingerPointerVisible)
 	var grabH = new GrabHandler(canvasElement, new PalmPointer(canvasElement, true));
+	var pinchH = new myleap.handlers.PinchHandler(canvasElement, fingerPointerVisible);
 
+	breadCrumb.addTile({'name' : 'PINCH'}, [pinchH, navigationH]);
 	breadCrumb.addTile({'name' : 'GRAB'}, [grabH, new NavigationHandler(canvasElement, breadCrumb, palmPointer)]);
 	breadCrumb.addTile({'name' : 'RANGE'}, [touchH, navigationH]);
 	breadCrumb.addTile({'name' : 'INFO'}, [visibleNavigationH, infoH]);

@@ -60,3 +60,21 @@ th.info-header {
 	height: 100%;
 	border: 1px solid #000;
 }
+
+#waldo-image {
+	display: none;
+}
+
+#state-indicator {
+	display: inline-block;
+	border: solid 1px;
+}
+
+.state {
+	display: inline-block;	
+	padding: 4px;
+}
+
+.state.active {
+	background-color: rgba(169, 225, 238, 0.6);
+}

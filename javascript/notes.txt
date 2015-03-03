@@ -13,4 +13,7 @@ Hand:
 obserwacje:
 Jesli wykorzystywany jest grab to przydala by sie zmiana wskaznika na palec wskazujacy kiedy pozostale palce sa zgiete i na cala dlon kiedy chcemy cos zlapac (grab)
 Zastanowic sie nad optymalna wielkoscia workspace'a - moze jakias nie liniowa zmiana polozenia przy krawdzedziach ?
+Dwa sposoby kontroli (inne osie do obslugi):
+	1) uniesiona reka
+	2) oparta
 

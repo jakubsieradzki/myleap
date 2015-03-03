@@ -104,15 +104,20 @@ PalmPointer.prototype.fromFrameInner= function(frame) {
 }
 
 // ------------------ //
-FingerPointer.prototype = Object.create(Pointer.prototype)
-function FingerPointer(canvasElement, drawPointer) {
+FingerPointer.prototype = Object.create(Pointer.prototype);
+function FingerPointer(canvasElement, drawPointer, getFingerFunction) {
 	Pointer.call(this, canvasElement, drawPointer);
+	if (getFingerFunction === undefined) {
+		getFingerFunction = function(frame) {
+			return frame.hands[0].indexFinger;
+		}
+	}
+	this.getFingerFunction = getFingerFunction;
 }
 
 FingerPointer.prototype.fromFrameInner = function(frame) {
-	if (frame.hands.length > 0) {
-		var hand = frame.hands[0];
-		var finger = hand.indexFinger;		
+	if (frame.hands.length > 0) {		
+		var finger = this.getFingerFunction(frame);		
 		var canvasCoords = this.toCanvasCoords(frame, finger.tipPosition);	
 		return canvasCoords;
 	}
@@ -436,3 +441,76 @@ GrabHandler.prototype.onRelease = function(point) {
 	this.pointer.point.fillColor = 'blue';
 }
 
+var myleap = myleap || {};
+myleap.handlers = (function() {
+	var getThumb = function(frame) {
+		return frame.hands[0].thumb;
+	}
+
+	var PinchHandler = function(canvasElement, _pointer) {
+		this.pointer = _pointer;
+		this.thumbPointer = new FingerPointer(canvasElement, true, getThumb)
+
+		this.scaleRange = 0.4;
+		this.scaleMin = 1 - (this.scaleRange / 2);
+		this.scaling = false;
+		this.enterFactor = 0;
+	};
+
+	PinchHandler.prototype = {
+		init : function() {
+			// waldo picture
+			this.image = new paper.Raster("waldo-image");
+			this.image.position = paper.view.center;
+			console.log(this.image.size.width);
+
+			this.baseSize = this.image.getBounds().width;
+
+			// pinch strngth text 
+			var fontSize = 25;
+			this.pinchText = new paper.PointText(new paper.Point(5, fontSize));
+			this.pinchText.fontSize = fontSize;
+
+			// thumb pointer
+			this.thumbPointer.createPoint();
+			this.thumbPointer.point.fillColor = 'yellow';
+
+			// index pointer
+			this.pointer.createPoint();
+		},
+		handle : function(frame) {
+			if (frame.hands.length < 1) {
+				return;
+			}
+			var hand = frame.hands[0];
+			var thumb = hand.thumb;
+			var pinchStrength = hand.pinchStrength.toPrecision(2);
+			var indexCoords = this.pointer.fromFrame(frame);
+			var thumbCoords = this.thumbPointer.fromFrame(frame);
+
+			if (thumbCoords[2] < 0.3) {
+				if (!this.scaling) {
+					this.scaling = true;
+					this.enterFactor = pinchStrength;
+				}
+				
+				var factor = 1 - (this.enterFactor - pinchStrength);
+				this.pinchText.content = factor;
+
+				// factor = (factor * this.scaleRange) + this.scaleMin;
+				var targetWidth = this.baseSize * factor;
+				var scaleFactor = targetWidth / this.image.getBounds().width;						
+				this.image.scale(scaleFactor);		
+			} else {
+				this.scaling = false;
+				this.baseSize = this.image.getBounds().width;
+			}			
+
+			// this.pinchText.content = pinchStrength;
+		}
+	};
+
+	return {
+		PinchHandler : PinchHandler
+	};
+})();
