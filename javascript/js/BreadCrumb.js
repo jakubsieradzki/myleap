@@ -21,8 +21,6 @@ BreadCrumb.prototype.addTile = function(tileConfig, _handlers) {
 		navigation : item,
 		handlers : _handlers
 	};
-
-	this.update();
 }
 
 BreadCrumb.prototype.next = function() {

@@ -259,12 +259,12 @@ NavigationHandler.prototype.init = function() {
 	var arrowX = this.drawingWidth - this.arrowWidth;
 	var arrowY = this.drawingHeight - this.arrowHeight;
 
-	this.right = new StretchButton(arrowX, arrowY, this.arrowWidth, this.arrowHeight, true);	
+	this.right = new myleap.components.StretchButton(arrowX, arrowY, this.arrowWidth, this.arrowHeight, true);	
 	this.right.setAction(function() {
 		that.navigator.next();
 	});
 
-	this.left = new StretchButton(0, arrowY, this.arrowWidth, this.arrowHeight, false);	
+	this.left = new myleap.components.StretchButton(0, arrowY, this.arrowWidth, this.arrowHeight, false);	
 	this.left.setAction(function() {
 		that.navigator.previous();
 	});
@@ -295,13 +295,49 @@ function TouchHandler(pointer_) {
 	this.pointer = pointer_;
 	this.initSize = 20;
 	this.maxSize = 150;
+	this.events = {};
+	this.figures = [];
 }
 
-TouchHandler.prototype.init = function() {
+TouchHandler.prototype.init = function() {	
+	var that = this;
+
+	var addFigure = function(figure) {
+		figure.strokeWidth = 4;		
+		figure.fillColor = 'purple';
+		that.figures[that.figures.length] = new myleap.components.MovingShape(figure);	
+	}
+
+	// add figure
+	addFigure(new paper.Path.Rectangle(100, 100, 150, 100));
+	addFigure(new paper.Path.Circle(100, 300, 75));	
+
 	this.indexTip = paper.Path.Circle(new paper.Point(0, 0), this.initSize);
-	this.indexTip.fillColor = 'red';
-	// this.indexTip.strokeColor = 'blue';
+	this.indexTip.fillColor = 'red';	
 	this.pointer.createPoint();
+
+	
+	this.events["touch"] = function(event) {		
+		that.figures.forEach(function(figure) {
+			if (figure.shape.contains(event.point)) {				
+				figure.selected = true;
+				figure.shape.strokeColor = 'black'
+				
+				if (figure.offset.x == 0 && figure.offset.y == 0) {
+					figure.offset = figure.shape.position.subtract(event.point);
+				}
+				figure.shape.position.x = event.point.x + figure.offset.x;
+				figure.shape.position.y = event.point.y + figure.offset.y;				
+			}
+		});		
+	};
+
+	this.events["take-off"] = function() {
+		that.figures.forEach(function(figure) {
+			figure.shape.strokeColor = 'white';
+			figure.offset = new paper.Point(0, 0);
+		});
+	};
 }
 
 TouchHandler.prototype.handle = function(frame) {
@@ -314,95 +350,89 @@ TouchHandler.prototype.handle = function(frame) {
 		this.indexTip.position.x = x;
 		this.indexTip.position.y = y;
 		var currentSize = this.indexTip.bounds.width / 2;
-		var target = z * this.maxSize;
-		if (target > 0) {
-			this.indexTip.scale(target / currentSize);
-			var color = target < this.initSize ? 'red' : 'blue';
-			var alpha = (1 - z) > 0.6 ? (1 - z) : 0;
-			this.pointer.point.fillColor = color;
-			this.indexTip.fillColor.alpha = alpha;
+		var target = z * this.maxSize;				
+
+		var color = 'blue';
+		var scale = 1.0;
+		var alpha = 1 - z;
+		if (target > 0) {			
+			scale = target / currentSize;			
+		}		
+
+		var touched = target < this.initSize;
+		var point = new paper.Point(x, y);
+		if (touched) {
+			color = 'red'
+			this.figures.forEach(function(figure) {
+				if (figure.contains(point)) {
+					figure.updateTouch(point);
+				}
+			});		
+		} else {
+			this.figures.forEach(function(figure) { 				
+				if (figure.contains(point)) {
+					figure.takeOff(point); 
+				}
+			});				
+		}
+		this.pointer.point.fillColor = color;
+		this.indexTip.scale(scale);
+		this.indexTip.fillColor.alpha = alpha;
+	}
+}
+
+// *****************
+// Grab Handler
+// *****************
+
+function GrabHandler(canvasElement, _pointer) {
+	this.drawingWidth = canvasElement.offsetWidth;
+	this.drawingHeight = canvasElement.offsetHeight;
+
+	this.pointer = _pointer;
+}
+
+GrabHandler.prototype.init = function() {
+	var fontSize = 25;
+	this.grabText = new paper.PointText(new paper.Point(5, fontSize));
+	this.grabText.fontSize = fontSize;
+	this.grabText.content = "Grab strength";	
+
+	// figures
+	var shape = new paper.Path.Rectangle(100, 100, 150, 150);
+	shape.fillColor = 'purple';	
+	this.box = new myleap.components.MovingShape(shape);
+
+	// pointer
+	this.pointer.createPoint();
+}
+
+GrabHandler.prototype.handle = function(frame) {
+	if (frame.hands.length > 0) {
+		var hand = frame.hands[0];
+		var grabS = hand.grabStrength.toPrecision(2);
+		this.grabText.content = grabS;
+		var coords = this.pointer.fromFrame(frame);
+		var point = new paper.Point(coords[0], coords[1]);
+		if (grabS > 0.8) {			
+			this.onGrab(point);
+			if (this.box.contains(point)) {
+				this.box.updateTouch(point);
+			}
+		} else {
+			this.onRelease(point);
+			if (this.box.contains(point)) {
+				this.box.takeOff(point);
+			}
 		}
 	}
 }
 
-// COMPONENTS 
-
-function StretchButton(x, y, width, height, right) {
-	const RATIO = 0.3;
-	const GAP = 2;
-	const ACTION_RANGE = 150;
-	var activeWidth = width * RATIO;
-	var passiveWidth = width - activeWidth;
-	this.moveActive = false;
-
-	var actX = right ? x : passiveWidth + GAP;
-	this.active = paper.Path.Rectangle(actX, y, activeWidth - GAP, height)
-	this.active.fillColor = 'red';	
-
-	var passiveX = right ? x + activeWidth : x;
-	this.passive = paper.Path.Rectangle(passiveX, y, passiveWidth, height);
-	this.passive.fillColor = 'red';
-
-	this.initial = {
-		activeX : actX,
-		activeW : activeWidth,
-		passiveX : passiveX
-	};
-	this.right = right;
-
-	this.actionRange = right ? actX - ACTION_RANGE : actX + ACTION_RANGE;
-	this.userAction = function() {};	
+GrabHandler.prototype.onGrab = function(point) {
+	this.pointer.point.fillColor = 'red';
 }
 
-StretchButton.prototype.show = function() {
-	this.active.visible = true;	
-	this.passive.visible = true;
+GrabHandler.prototype.onRelease = function(point) {
+	this.pointer.point.fillColor = 'blue';
 }
 
-StretchButton.prototype.hide = function() {
-	this.active.visible = false;	
-	this.passive.visible = false;
-}
-
-StretchButton.prototype.setAction = function(_action) {
-	this.userAction = _action;
-}
-
-StretchButton.prototype.getPositionFunc = function() {
-	return this.right ? Math.min : Math.max;
-}
-
-StretchButton.prototype.readyForAction = function() {
-	if (this.right) {
-		return this.active.bounds.x <= this.actionRange;
-	}
-	else {
-		return this.active.bounds.x >= this.actionRange;
-	}
-}
-
-StretchButton.prototype.update = function(x_, y_) {	
-	if (this.moveActive || this.active.bounds.contains(x_, y_)) {
-		this.moveActive = true;		
-		var positionFunc = this.getPositionFunc();
-		this.active.bounds.x = positionFunc(this.initial.activeX, x_);
-
-		if (y_ < this.active.bounds.y) {
-			this.reset();
-		}
-		if (this.readyForAction()) {
-			this.action();
-		}
-	}
-
-}
-
-StretchButton.prototype.reset = function() {
-	this.moveActive = false;	
-	this.active.bounds.x = this.initial.activeX;
-}
-
-StretchButton.prototype.action = function() {
-	this.reset();
-	this.userAction();
-}

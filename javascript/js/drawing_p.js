@@ -20,7 +20,8 @@ $(function() {
 
 	// pointers
 	var fingerPointerVisible = new FingerPointer(canvasElement, true);	
-	var fingerPointer = new FingerPointer(canvasElement, false);	
+	var fingerPointer = new FingerPointer(canvasElement, false);
+	var palmPointer = new PalmPointer(canvasElement, false);
 
 	// handlers
 	var infoH = new InfoHanlder(canvasElement);
@@ -28,10 +29,14 @@ $(function() {
 	var navigationH = new NavigationHandler(canvasElement, breadCrumb, fingerPointer);
 	var pointerH = new PointerHanlder(canvasElement);
 	var touchH = new TouchHandler(fingerPointerVisible)
+	var grabH = new GrabHandler(canvasElement, new PalmPointer(canvasElement, true));
 
+	breadCrumb.addTile({'name' : 'GRAB'}, [grabH, new NavigationHandler(canvasElement, breadCrumb, palmPointer)]);
 	breadCrumb.addTile({'name' : 'RANGE'}, [touchH, navigationH]);
 	breadCrumb.addTile({'name' : 'INFO'}, [visibleNavigationH, infoH]);
 	breadCrumb.addTile({'name' : 'BASIC'}, [navigationH, pointerH]);
+
+	breadCrumb.update();	
 })
 
 
