@@ -363,6 +363,7 @@ myleap.handlers = (function() {
 	var PinchHandler = function(canvasElement, _pointer) {
 		this.pointer = _pointer;
 		this.thumbPointer = new myleap.pointers.FingerPointer(canvasElement, true, 0)
+		this.palmPointer = new myleap.pointers.PalmPointer(canvasElement, true);
 
 		this.scaleRange = 0.6;
 		this.scaleMin = 1 - (this.scaleRange / 2);
@@ -375,7 +376,7 @@ myleap.handlers = (function() {
 			// waldo picture
 			this.image = new paper.Raster("waldo-image");
 			this.image.position = paper.view.center;
-			this.movingImage = myleap.components.MovingShape(this.image);
+			this.movingImage = new myleap.components.MovingShape(this.image);
 
 			this.baseSize = this.image.getBounds().width;
 
@@ -390,6 +391,9 @@ myleap.handlers = (function() {
 
 			// index pointer
 			this.pointer.createPoint();
+
+			// palm pointer
+			this.palmPointer.createPoint();
 		},
 		handle : function(frame) {
 			if (frame.hands.length < 1) {
@@ -400,22 +404,24 @@ myleap.handlers = (function() {
 			var pinchStrength = hand.pinchStrength.toPrecision(2);
 			var indexCoords = this.pointer.fromFrame(frame);
 			var thumbCoords = this.thumbPointer.fromFrame(frame);
+			this.palmPointer.fromFrame(frame);
 
 			var action = this._getAction(hand);
+			action.showCursor();
 			if (thumbCoords[2] < 0.3) {
 				action.inAction(hand);
 			} else {
-				action.outAction();
+				action.outAction(hand);
 			}			
 
-			this.pinchText.content = pinchStrength;
+			// this.pinchText.content = pinchStrength;
 		},
 		_handlePinchIn : function(hand) {
 			var pinchStrength = hand.pinchStrength;
-			var context = this.context;
+			var context = this.context;			
 			if (!context.scaling) {
 				context.scaling = true;
-				context.enterFactor = pinchStrength;
+				context.enterFactor = pinchStrength;				
 			}
 			
 			var factor = context.enterFactor - pinchStrength;
@@ -426,15 +432,33 @@ myleap.handlers = (function() {
 
 			// factor = (factor * this.scaleRange) + this.scaleMin;
 			var targetWidth = context.baseSize * factor;
-			var scaleFactor = targetWidth / context.image.getBounds().width;						
-			context.image.scale(scaleFactor);
+			var scaleFactor = targetWidth / context.image.getBounds().width;
+			var palmPosition = context.palmPointer.fromFrame(hand.frame);		
+			context.image.scale(scaleFactor, new paper.Point(palmPosition[0], palmPosition[1]));
 		},
-		_handlePinchOut : function() {
+		_handlePinchOut : function(hand) {
 			this.context.scaling = false;
 			this.context.baseSize = this.context.image.getBounds().width;
 		},
+		_pinchCursor : function() {
+			this.context.pointer.point.visible = true;
+			this.context.thumbPointer.point.visible = true;
+			this.context.palmPointer.point.visible = false;
+		},
 		_handleFreeHandIn : function(hand) {
-
+			var palmCoords = this.context.palmPointer.fromFrame(hand.frame);
+			var point = new paper.Point(palmCoords[0], palmCoords[1]);
+			if (this.context.movingImage.shape.contains(point)) {
+				this.context.movingImage.updateTouch(point);
+			}			
+		},
+		_handleFreeHandOut : function(hand) {			
+			this.context.movingImage.takeOff(new paper.Point(0, 0))
+		},
+		_freeHandCursor : function() {
+			this.context.pointer.point.visible = false;
+			this.context.thumbPointer.point.visible = false;
+			this.context.palmPointer.point.visible = true;
 		},
 		_getAction : function(hand) {
 			var that = this;
@@ -448,13 +472,15 @@ myleap.handlers = (function() {
 				return {
 					context : that,
 					inAction : that._handlePinchIn,
-					outAction : that._handlePinchOut
+					outAction : that._handlePinchOut,
+					showCursor : that._pinchCursor
 				};
 			} else {
 				return {
 					context : that,
 					inAction : that._handleFreeHandIn,
-					outAction : function() {}
+					outAction : that._handleFreeHandOut,
+					showCursor : that._freeHandCursor
 				};
 			}
 		}
