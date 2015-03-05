@@ -19,9 +19,9 @@ $(function() {
 	var breadCrumb = new BreadCrumb({'containerID': "breadcrumb-container"}, frameManager);
 
 	// pointers
-	var fingerPointerVisible = new FingerPointer(canvasElement, true);	
-	var fingerPointer = new FingerPointer(canvasElement, false);
-	var palmPointer = new PalmPointer(canvasElement, false);
+	var fingerPointerVisible = new myleap.pointers.FingerPointer(canvasElement, true);	
+	var fingerPointer = new myleap.pointers.FingerPointer(canvasElement, false);
+	var palmPointer = new myleap.pointers.PalmPointer(canvasElement, false);
 
 	// handlers
 	var infoH = new InfoHanlder(canvasElement);
@@ -29,7 +29,7 @@ $(function() {
 	var navigationH = new NavigationHandler(canvasElement, breadCrumb, fingerPointer);
 	var pointerH = new PointerHanlder(canvasElement);
 	var touchH = new TouchHandler(fingerPointerVisible)
-	var grabH = new GrabHandler(canvasElement, new PalmPointer(canvasElement, true));
+	var grabH = new GrabHandler(canvasElement, new myleap.pointers.PalmPointer(canvasElement, true));
 	var pinchH = new myleap.handlers.PinchHandler(canvasElement, fingerPointerVisible);
 
 	breadCrumb.addTile({'name' : 'PINCH'}, [pinchH, navigationH]);

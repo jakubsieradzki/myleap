@@ -41,89 +41,6 @@ FrameManager.prototype.changeHandlers = function(_handlers) {
 	this.running = true;	
 }
 
-// ******
-// UTILS
-// ******
-
-function Pointer(canvasElement, drawPointer_) {
-	this.drawingWidth = canvasElement.offsetWidth;
-	this.drawingHeight = canvasElement.offsetHeight;
-	this.frame = {};
-	this.drawPointer = drawPointer_;
-
-	this.defaultX = this.drawingWidth / 2;
-	this.defaultY = this.drawingHeight / 2;
-	this.defaultZ = 0.5;
-}
-
-Pointer.prototype.createPoint = function() {
-	if (this.drawPointer) {
-		this.point = paper.Path.Circle(new paper.Point(this.drawingWidth/2, this.drawingHeight/2), 15);
-		this.point.fillColor = 'blue';
-	}
-}
-
-Pointer.prototype.toCanvasCoords = function(frame, referencePosition) {
-	var normalizedPosition = frame.interactionBox.normalizePoint(referencePosition, true);
-	var canvasX = this.drawingWidth * normalizedPosition[0];
-  var canvasY = this.drawingHeight * (1 - normalizedPosition[1]);
-
-  return [canvasX, canvasY, normalizedPosition[2]];
-}
-
-Pointer.prototype.fedFrame = function(frame) {
-	this.frame = frame;
-}
-
-Pointer.prototype.defaultPosition = function() {
-	return [this.defaultX, this.defaultY, this.defaultZ];
-}
-
-Pointer.prototype.fromFrame = function (frame) {
-	var result = this.fromFrameInner(frame);
-	if (this.drawPointer) {
-		this.point.position.x = result[0];
-		this.point.position.y = result[1];
-	}	
-	return result;
-}
-
-// ------------------ //
-PalmPointer.prototype = Object.create(Pointer.prototype);
-function PalmPointer(canvasElement, drawPointer) {
-	Pointer.call(this, canvasElement, drawPointer);
-}
-
-PalmPointer.prototype.fromFrameInner= function(frame) {
-	if (frame.hands.length > 0) {
-		var hand = frame.hands[0];				
-		var canvasCoords = this.toCanvasCoords(frame, hand.palmPosition);	
-		return canvasCoords;	
-	}
-	return this.defaultPosition();
-}
-
-// ------------------ //
-FingerPointer.prototype = Object.create(Pointer.prototype);
-function FingerPointer(canvasElement, drawPointer, getFingerFunction) {
-	Pointer.call(this, canvasElement, drawPointer);
-	if (getFingerFunction === undefined) {
-		getFingerFunction = function(frame) {
-			return frame.hands[0].indexFinger;
-		}
-	}
-	this.getFingerFunction = getFingerFunction;
-}
-
-FingerPointer.prototype.fromFrameInner = function(frame) {
-	if (frame.hands.length > 0) {		
-		var finger = this.getFingerFunction(frame);		
-		var canvasCoords = this.toCanvasCoords(frame, finger.tipPosition);	
-		return canvasCoords;
-	}
-	return this.defaultPosition();
-}
-
 // *****************
 // POINTER HANDLER
 // *****************
@@ -133,7 +50,7 @@ function PointerHanlder(canvasElement) {
 	this.pointers = [];
 	this.colors = ['#7CFC00', '#E9FF1F', '#FC6E08', '#088AFC', '#BD00C7'];
 
-	this.pointer = new FingerPointer(canvasElement, false);
+	this.pointer = new myleap.pointers.FingerPointer(canvasElement, false);
 }
 
 PointerHanlder.prototype.init = function() {	
@@ -443,13 +360,9 @@ GrabHandler.prototype.onRelease = function(point) {
 
 var myleap = myleap || {};
 myleap.handlers = (function() {
-	var getThumb = function(frame) {
-		return frame.hands[0].thumb;
-	}
-
 	var PinchHandler = function(canvasElement, _pointer) {
 		this.pointer = _pointer;
-		this.thumbPointer = new FingerPointer(canvasElement, true, getThumb)
+		this.thumbPointer = new myleap.pointers.FingerPointer(canvasElement, true, 0)
 
 		this.scaleRange = 0.6;
 		this.scaleMin = 1 - (this.scaleRange / 2);
