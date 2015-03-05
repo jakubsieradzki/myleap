@@ -451,18 +451,18 @@ myleap.handlers = (function() {
 		this.pointer = _pointer;
 		this.thumbPointer = new FingerPointer(canvasElement, true, getThumb)
 
-		this.scaleRange = 0.4;
+		this.scaleRange = 0.6;
 		this.scaleMin = 1 - (this.scaleRange / 2);
 		this.scaling = false;
 		this.enterFactor = 0;
-	};
+	};	
 
 	PinchHandler.prototype = {
 		init : function() {
 			// waldo picture
 			this.image = new paper.Raster("waldo-image");
 			this.image.position = paper.view.center;
-			console.log(this.image.size.width);
+			this.movingImage = myleap.components.MovingShape(this.image);
 
 			this.baseSize = this.image.getBounds().width;
 
@@ -488,25 +488,62 @@ myleap.handlers = (function() {
 			var indexCoords = this.pointer.fromFrame(frame);
 			var thumbCoords = this.thumbPointer.fromFrame(frame);
 
+			var action = this._getAction(hand);
 			if (thumbCoords[2] < 0.3) {
-				if (!this.scaling) {
-					this.scaling = true;
-					this.enterFactor = pinchStrength;
-				}
-				
-				var factor = 1 - (this.enterFactor - pinchStrength);
-				this.pinchText.content = factor;
-
-				// factor = (factor * this.scaleRange) + this.scaleMin;
-				var targetWidth = this.baseSize * factor;
-				var scaleFactor = targetWidth / this.image.getBounds().width;						
-				this.image.scale(scaleFactor);		
+				action.inAction(hand);
 			} else {
-				this.scaling = false;
-				this.baseSize = this.image.getBounds().width;
+				action.outAction();
 			}			
 
-			// this.pinchText.content = pinchStrength;
+			this.pinchText.content = pinchStrength;
+		},
+		_handlePinchIn : function(hand) {
+			var pinchStrength = hand.pinchStrength;
+			var context = this.context;
+			if (!context.scaling) {
+				context.scaling = true;
+				context.enterFactor = pinchStrength;
+			}
+			
+			var factor = context.enterFactor - pinchStrength;
+			// normalize
+			factor = (factor + 1.0) / (2.0);
+			// to range
+			factor = (factor * context.scaleRange) + context.scaleMin;
+
+			// factor = (factor * this.scaleRange) + this.scaleMin;
+			var targetWidth = context.baseSize * factor;
+			var scaleFactor = targetWidth / context.image.getBounds().width;						
+			context.image.scale(scaleFactor);
+		},
+		_handlePinchOut : function() {
+			this.context.scaling = false;
+			this.context.baseSize = this.context.image.getBounds().width;
+		},
+		_handleFreeHandIn : function(hand) {
+
+		},
+		_getAction : function(hand) {
+			var that = this;
+			var extendedCount = 0;
+			hand.fingers.forEach(function(finger) {
+				if (finger.extended) {
+					extendedCount++;
+				}
+			});
+			if (extendedCount <= 2) {
+				return {
+					context : that,
+					inAction : that._handlePinchIn,
+					outAction : that._handlePinchOut
+				};
+			} else {
+				return {
+					context : that,
+					inAction : that._handleFreeHandIn,
+					outAction : function() {}
+				};
+			}
 		}
 	};
 
