@@ -2,11 +2,12 @@ var myleap = myleap || {};
 
 myleap.pointers = (function(){
 	/** Abstract Pointer **/
-	var Pointer = function(canvasElement, drawPointer_) {
+	var Pointer = function(canvasElement, drawPointer_, left_) {
 		this.drawingWidth = canvasElement.offsetWidth;
 		this.drawingHeight = canvasElement.offsetHeight;
 		this.frame = {};
 		this.drawPointer = drawPointer_;
+		this.left = (typeof left_ === 'undefined') ? false : left_;
 
 		this.defaultX = this.drawingWidth / 2;
 		this.defaultY = this.drawingHeight / 2;
@@ -58,8 +59,8 @@ myleap.pointers = (function(){
 	};
 
 	//** Finger Pointer **//
-	var FingerPointer = function (canvasElement, drawPointer, fingerIndex) {
-		Pointer.call(this, canvasElement, drawPointer);
+	var FingerPointer = function (canvasElement, drawPointer, fingerIndex, left_) {
+		Pointer.call(this, canvasElement, drawPointer, left_);
 		if (fingerIndex === undefined) {
 			fingerIndex = 1;
 		}
@@ -68,16 +69,52 @@ myleap.pointers = (function(){
 	FingerPointer.prototype = Object.create(Pointer.prototype);
 
 	FingerPointer.prototype.fromFrameInner = function(frame) {
-		if (frame.hands.length > 0) {		
-			var finger = frame.hands[0].fingers[this.fingerIndex];
-			return this.toCanvasCoords(frame, finger.tipPosition);
+		var hand = myleap.utils._getHand(frame, this.left);
+		if (hand === undefined) {
+			return this.defaultPosition();
+		}		
+		var finger = hand.fingers[this.fingerIndex];
+		return this.toCanvasCoords(frame, finger.tipPosition);			
+	};
+
+	//** Tool Pointer **//
+	var ToolPointer = function(canvasElement, drawPointer) {
+		Pointer.call(this, canvasElement, drawPointer);
+		this.lastZone = "";
+		this.transitions = {
+			"touch": {
+				from: "touching",
+				to: "hovering",
+				action: function() { console.log("TOOL TOUCH"); }
+			}
+		};
+	};
+	ToolPointer.prototype = Object.create(Pointer.prototype);
+
+	ToolPointer.prototype.fromFrameInner = function(frame) {
+		if (frame.tools.length > 0) {
+			var that = this;
+			var tool = frame.tools[0];
+			
+			// console.log("last: " + this.lastZone);
+			// console.log("current: " + tool.touchZone);
+			for (trName in this.transitions) {
+				tr = this.transitions[trName];
+				if (tr.from == this.lastZone && tr.to == tool.touchZone) {
+					tr.action();
+				}
+			}
+			this.lastZone = tool.touchZone;
+
+			return that.toCanvasCoords(frame, tool.stabilizedTipPosition);			
 		}
 		return this.defaultPosition();
 	};
 
 	return {
 		PalmPointer : PalmPointer,
-		FingerPointer : FingerPointer
+		FingerPointer : FingerPointer,
+		ToolPointer : ToolPointer
 	};
 
 })();

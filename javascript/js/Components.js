@@ -104,9 +104,41 @@ myleap.components = (function() {
 		}
 	};
 
+	/** State indicator **/
+	var StateIndicator = function(elementId) {
+		this.elementId = elementId;		
+	};
+
+	StateIndicator.prototype = {
+		setState : function(state) {
+			this.clear();
+			$("#" + this.elementId).children("#" + state).addClass("active");
+		},
+		clear : function() {
+			$("#" + this.elementId).children(".state").each(function() {
+				$(this).removeClass("active");
+			});
+		}
+	};
+
+	var Fence = function() {
+		this.path = new paper.Path();
+		this.path.strokeColor = "green";	
+	};
+
+	Fence.prototype = {
+		addPost: function(paperPoint) {
+			this.path.add(paperPoint);
+			var post = new paper.Path.Circle(paperPoint, 10);
+			post.fillColor = "green";
+		}
+	};
+
 	return {
 		StretchButton : StretchButton,
-		MovingShape : MovingShape
+		MovingShape : MovingShape,
+		StateIndicator : StateIndicator,
+		Fence : Fence
 	};
 
 })();

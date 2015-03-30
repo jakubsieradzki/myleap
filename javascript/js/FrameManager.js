@@ -360,6 +360,7 @@ GrabHandler.prototype.onRelease = function(point) {
 
 var myleap = myleap || {};
 myleap.handlers = (function() {
+	/** Pinch handler **/
 	var PinchHandler = function(canvasElement, _pointer) {
 		this.pointer = _pointer;
 		this.thumbPointer = new myleap.pointers.FingerPointer(canvasElement, true, 0)
@@ -486,7 +487,131 @@ myleap.handlers = (function() {
 		}
 	};
 
-	return {
-		PinchHandler : PinchHandler
+	/** Tools handler **/
+	var ToolsHandler = function(canvasElement) {
+		this.toolPointer = new myleap.pointers.ToolPointer(canvasElement, true);
+		this.stateHandler = new myleap.handlers.HandStateHandler(canvasElement, true);
 	};
+
+	ToolsHandler.prototype = {
+		init : function() {
+			var that = this;
+
+			this.toolPointer.createPoint();
+			this.stateHandler.init();
+
+			this.fence = new myleap.components.Fence();
+
+			this.stateHandler.setFunctionOnce("hand-closed", function(frame) {
+				var coords = that.toolPointer.fromFrame(frame);
+				that.fence.addPost(new paper.Point(coords[0], coords[1]));
+			});	
+		},
+		handle : function(frame) {
+			this.stateHandler.handle(frame);
+			var coords = this.toolPointer.fromFrame(frame);			
+		}
+	};
+
+	/** Hand state handler **/
+	var HandStateHandler = function(canvasElement, left) {
+		var that = this;
+		this.stateIndicator = new myleap.components.StateIndicator("state-indicator");
+		this.left = left;
+		this.lastState = "";
+		this.events = {
+			"hand-opened" :  {
+				apply: function(hand) { return hand.grabStrength < 0.5; },				
+				updateState : function() { that.stateIndicator.setState("hand-opened"); },
+				fire: function(frame) {},
+				once: function(frame) {}
+			},
+			"hand-closed" :  {
+				apply: function(hand) { return hand.grabStrength >= 0.5; },				
+				updateState : function() { that.stateIndicator.setState("hand-closed"); },
+				fire: function(frame) {},
+				once: function(frame) {}
+			},
+			"pinky-pinch" :  {
+				apply: function(hand) {
+					var thumb = hand.thumb.tipPosition;
+					var pinky = hand.pinky.tipPosition;
+					var distance = Leap.vec3.distance(thumb, pinky);
+					return distance < 20; 
+				},				
+				updateState : function() {},
+				fire: function(frame) {},
+				once: function(frame) { console.log("PINKY"); }
+			},
+		};
+	};
+
+	HandStateHandler.prototype = {
+		init : function() {
+
+		},
+		handle : function(frame) {
+			var hand = this.left ? myleap.utils.getLeftHand(frame) : getRightHand(frame);
+			if (hand === undefined) {
+				this.stateIndicator.clear();
+				return;
+			}			
+			for (eventName in this.events) {
+				var event = this.events[eventName];
+				if (event.apply(hand)) {
+					event.updateState();
+					event.fire(frame);
+					if (this.lastState != eventName) {
+						event.once(frame);
+					}
+					this.lastState = eventName;					
+				}
+			}
+		},
+		setFunction : function(eventName, callback) {
+			if (eventName in this.events) {
+				this.events[eventName].fire = callback;
+			}
+		},
+		setFunctionOnce : function(eventName, callback) {
+			if (eventName in this.events) {
+				this.events[eventName].once = callback;
+			}
+		}
+	};
+
+	/** Both hands handler **/
+	BothHandsHanlder = function(canvasElement) {
+		this.handState = new myleap.handlers.HandStateHandler(canvasElement, true);
+		this.pointer = new myleap.pointers.FingerPointer(canvasElement, true, 1, false);
+	};
+
+	BothHandsHanlder.prototype = {
+		init : function() {
+			var that = this;
+			this.drawPath = new paper.Path();
+			this.drawPath.strokeColor = 'blue';	
+			this.pointer.createPoint();
+			this.handState.init();
+
+			// events
+			this.handState.setFunction("hand-closed", function(frame) {
+				var coords = that.pointer.fromFrame(frame);
+				that.drawPath.add(new paper.Point(coords[0], coords[1]));
+			});
+		},
+		handle : function(frame) {
+			this.handState.handle(frame);
+			this.pointer.fromFrame(frame);
+		}
+	};
+
+
+	return {
+		PinchHandler : PinchHandler,
+		ToolsHandler : ToolsHandler,
+		HandStateHandler : HandStateHandler,
+		BothHandsHanlder : BothHandsHanlder
+	};
+
 })();
