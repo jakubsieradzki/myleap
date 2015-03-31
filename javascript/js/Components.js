@@ -60,15 +60,15 @@ myleap.components = (function() {
 
 	/** STRERCH BUTTON RECT **/
 	var RectStretchButton = function(basePosition, baseSize, interactionAngle) {
-		AbstractStretchButton.call(this, basePosition, (baseSize.width/2) + 12, interactionAngle);
+		AbstractStretchButton.call(this, basePosition, (baseSize.width/2), interactionAngle);
 		this.base = new paper.Path.Rectangle(basePosition, baseSize);
 		this.base.position = basePosition;
-		this.base.fillColor = 'red';		
+		this.base.fillColor = myleap.colors.stretchButton.base;		
 
 		var interactionSize = new paper.Size(20, baseSize.height);
 		this.interact = new paper.Path.Rectangle(this.interactionPosition, interactionSize);	
 		this.interact.position = this.interactionPosition;
-		this.interact.fillColor = 'purple';
+		this.interact.fillColor = myleap.colors.stretchButton.interact;
 
 		this.base.rotate(this.vector.angle);
 		this.interact.rotate(this.vector.angle);
@@ -150,7 +150,6 @@ myleap.components = (function() {
 	};
 
 	return {
-		StretchButton : StretchButton,
 		RectStretchButton : RectStretchButton,
 		MovingShape : MovingShape,
 		StateIndicator : StateIndicator,
@@ -159,3 +158,9 @@ myleap.components = (function() {
 
 })();
 
+myleap.colors = {
+	stretchButton : {
+		base : "#007CE8",
+		interact : "#4DACFF"
+	}
+};

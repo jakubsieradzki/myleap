@@ -209,8 +209,7 @@ NavigationHandler.prototype.handle = function(frame) {
 		// }
 		var eventPoint = new paper.Point(x_, y_);
 		this.right.update(eventPoint);
-		this.left.update(eventPoint);
-		this.test.update(new paper.Point(x_, y_));
+		this.left.update(eventPoint);		
 	}
 }
 
