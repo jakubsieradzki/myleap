@@ -1,6 +1,60 @@
 var myleap = myleap || {};
 
 myleap.components = (function() {
+
+	/** ABSTRACT STRETCH BUTTON **/
+	var AbstractStretchButton = function(basePosition, interactionPosition) {
+		this.actionRange = 150;
+		this.basePosition = basePosition;
+		this.interactionPosition = interactionPosition;
+		this.vector = interactionPosition - basePosition;		
+
+		this.userAction = function() {};
+	};
+
+	AbstractStretchButton.prototype = {
+		setVisible: function(visible) {
+			this.getBase().visible = visible;
+			this.getInteract().visible = visible;
+		},
+		show: function() {
+			this.setVisible(true);
+		},
+		hide: function() {
+			this.setVisible(false);			
+		},
+		setAction : function(_action) {
+			this.userAction = _action;
+		},
+		update: function(point) {
+			if (this.getBase().contains(point)) {
+				var userVector = this.interactionPosition - point;
+				var diffAngle = userVector.angle - this.vector.angle;
+				console.log(diffAngle);
+			}
+		}
+	};
+
+	/** STRERCH BUTTON RECT **/
+	var RectStretchButton = function(basePosition, baseSize, interactionPosition, interactionSize) {
+		AbstractStretchButton.call(this, basePosition, interactionPosition);
+		this.base = new paper.Path.Rectangle(basePosition, baseSize);
+		this.base.fillColor = 'red';
+
+		this.interact = new paper.Path.Rectangle(interactionPosition, interactionSize);
+		this.interact.fillColor = 'purple';
+	};
+
+	RectStretchButton.prototype = Object.create(AbstractStretchButton.prototype);
+	RectStretchButton.prototype = {
+		getBase: function() {
+			return this.base;
+		},
+		getInteract: function() {
+			return this.interact;
+		}
+	}
+
 	/** STRERCH BUTTON **/
 	var StretchButton = function(x, y, width, height, right) {
 		const RATIO = 0.3;
@@ -40,7 +94,7 @@ myleap.components = (function() {
 		},
 		setAction : function(_action) {
 			this.userAction = _action;
-		},
+		}, 
 		getPositionFunc : function() {
 			return this.right ? Math.min : Math.max;
 		},
@@ -136,6 +190,7 @@ myleap.components = (function() {
 
 	return {
 		StretchButton : StretchButton,
+		RectStretchButton : RectStretchButton,
 		MovingShape : MovingShape,
 		StateIndicator : StateIndicator,
 		Fence : Fence

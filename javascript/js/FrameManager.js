@@ -190,6 +190,12 @@ NavigationHandler.prototype.init = function() {
 	this.left.setAction(function() {
 		that.navigator.previous();
 	});
+
+	var basePos = new paper.Point(100, 100);
+	var baseSize = new paper.Size(100, 50);
+	var intrPos = new paper.Point(210, 100);
+	var intrSize = new paper.Size(20, 50);
+	this.test = new myleap.components.RectStretchButton(basePos, baseSize, intrPos, intrSize);
 }
 
 NavigationHandler.prototype.handle = function(frame) {
