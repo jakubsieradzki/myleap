@@ -178,24 +178,22 @@ NavigationHandler.prototype.init = function() {
 	var that = this;
 	this.pointer.createPoint();
 			
-	var arrowX = this.drawingWidth - this.arrowWidth;
-	var arrowY = this.drawingHeight - this.arrowHeight;
+	var arrowX = this.drawingWidth - this.arrowWidth / 2;
+	var arrowY = this.drawingHeight - this.arrowHeight / 2;
 
-	this.right = new myleap.components.StretchButton(arrowX, arrowY, this.arrowWidth, this.arrowHeight, true);	
+	var rightPosition = new paper.Point(arrowX, arrowY);
+	var leftPosition = new paper.Point(this.arrowWidth / 2, arrowY);
+	var arrowSize = new paper.Size(this.arrowWidth, this.arrowHeight);
+	
+	this.right = new myleap.components.RectStretchButton(rightPosition, arrowSize, 180);
 	this.right.setAction(function() {
 		that.navigator.next();
 	});
-
-	this.left = new myleap.components.StretchButton(0, arrowY, this.arrowWidth, this.arrowHeight, false);	
+	
+	this.left = new myleap.components.RectStretchButton(leftPosition, arrowSize, 0);
 	this.left.setAction(function() {
 		that.navigator.previous();
 	});
-
-	var basePos = new paper.Point(100, 100);
-	var baseSize = new paper.Size(100, 50);
-	var intrPos = new paper.Point(210, 100);
-	var intrSize = new paper.Size(20, 50);
-	this.test = new myleap.components.RectStretchButton(basePos, baseSize, intrPos, intrSize);
 }
 
 NavigationHandler.prototype.handle = function(frame) {
@@ -209,9 +207,10 @@ NavigationHandler.prototype.handle = function(frame) {
 		// 	that.palmPoint.position.x = x_;
 		// 	that.palmPoint.position.y = y_;
 		// }
-
-		this.right.update(x_, y_);
-		this.left.update(x_, y_);
+		var eventPoint = new paper.Point(x_, y_);
+		this.right.update(eventPoint);
+		this.left.update(eventPoint);
+		this.test.update(new paper.Point(x_, y_));
 	}
 }
 

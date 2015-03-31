@@ -3,13 +3,18 @@ var myleap = myleap || {};
 myleap.components = (function() {
 
 	/** ABSTRACT STRETCH BUTTON **/
-	var AbstractStretchButton = function(basePosition, interactionPosition) {
-		this.actionRange = 150;
-		this.basePosition = basePosition;
-		this.interactionPosition = interactionPosition;
-		this.vector = interactionPosition - basePosition;		
+	var AbstractStretchButton = function(basePosition, interactionLength, interactionAngle) {
+		this.active = false;
+		this._thresh = 20;
+		this.actionRange = interactionLength;
 
-		this.userAction = function() {};
+		this.basePosition = basePosition;
+		this.interactionAngle = interactionAngle;
+		this.vector = new paper.Point(interactionLength, 0);
+		this.vector.angle = interactionAngle;	
+		this.interactionPosition = basePosition.add(this.vector);
+
+		this.userAction = function() { console.log("ACTION"); };
 	};
 
 	AbstractStretchButton.prototype = {
@@ -26,109 +31,65 @@ myleap.components = (function() {
 		setAction : function(_action) {
 			this.userAction = _action;
 		},
-		update: function(point) {
-			if (this.getBase().contains(point)) {
-				var userVector = this.interactionPosition - point;
-				var diffAngle = userVector.angle - this.vector.angle;
-				console.log(diffAngle);
+		update: function(point) {			
+			if (this.getBounds().contains(point)) {
+				this.active = true;
+
+				var userVector = this.basePosition.subtract(point);	
+				var distance = (userVector.project(this.vector).length - this.vector.length) + this._thresh;			
+				var moveDistance = Math.max(0, distance);								
+				var moveVector = this.vector.clone();
+				moveVector.length = moveDistance;
+
+				this.getInteract().position = this.interactionPosition.add(moveVector);
+				this.getBounds().position = this.basePosition.add(moveVector);
+				if (moveDistance > this.actionRange) {
+					this.userAction();
+					this.reset();
+				}
 			}
+			else {
+				this.reset();
+			}			
+		},
+		reset : function() {
+			this.getInteract().position = this.interactionPosition;
+			this.getBounds().position = this.basePosition;
 		}
 	};
 
 	/** STRERCH BUTTON RECT **/
-	var RectStretchButton = function(basePosition, baseSize, interactionPosition, interactionSize) {
-		AbstractStretchButton.call(this, basePosition, interactionPosition);
+	var RectStretchButton = function(basePosition, baseSize, interactionAngle) {
+		AbstractStretchButton.call(this, basePosition, (baseSize.width/2) + 12, interactionAngle);
 		this.base = new paper.Path.Rectangle(basePosition, baseSize);
-		this.base.fillColor = 'red';
+		this.base.position = basePosition;
+		this.base.fillColor = 'red';		
 
-		this.interact = new paper.Path.Rectangle(interactionPosition, interactionSize);
+		var interactionSize = new paper.Size(20, baseSize.height);
+		this.interact = new paper.Path.Rectangle(this.interactionPosition, interactionSize);	
+		this.interact.position = this.interactionPosition;
 		this.interact.fillColor = 'purple';
+
+		this.base.rotate(this.vector.angle);
+		this.interact.rotate(this.vector.angle);
+
+		// debug
+		this.debug = this.base.clone();				
+		this.debug.fillColor = new paper.Color(0,0,0,0);
 	};
 
 	RectStretchButton.prototype = Object.create(AbstractStretchButton.prototype);
-	RectStretchButton.prototype = {
-		getBase: function() {
-			return this.base;
-		},
-		getInteract: function() {
-			return this.interact;
-		}
-	}
-
-	/** STRERCH BUTTON **/
-	var StretchButton = function(x, y, width, height, right) {
-		const RATIO = 0.3;
-		const GAP = 2;
-		const ACTION_RANGE = 150;
-		var activeWidth = width * RATIO;
-		var passiveWidth = width - activeWidth;
-		this.moveActive = false;
-
-		var actX = right ? x : passiveWidth + GAP;
-		this.active = paper.Path.Rectangle(actX, y, activeWidth - GAP, height)
-		this.active.fillColor = 'red';	
-
-		var passiveX = right ? x + activeWidth : x;
-		this.passive = paper.Path.Rectangle(passiveX, y, passiveWidth, height);
-		this.passive.fillColor = 'red';
-
-		this.initial = {
-			activeX : actX,
-			activeW : activeWidth,
-			passiveX : passiveX
-		};
-		this.right = right;
-
-		this.actionRange = right ? actX - ACTION_RANGE : actX + ACTION_RANGE;
-		this.userAction = function() {};	
+	RectStretchButton.prototype.getBase = function() {
+		return this.base;
+	}; 
+	
+	RectStretchButton.prototype.getInteract = function() {
+		return this.interact;
 	};
 
-	StretchButton.prototype = {
-		show : function() {
-			this.active.visible = true;	
-			this.passive.visible = true;
-		},
-		hide : function() {
-			this.active.visible = false;	
-			this.passive.visible = false;
-		},
-		setAction : function(_action) {
-			this.userAction = _action;
-		}, 
-		getPositionFunc : function() {
-			return this.right ? Math.min : Math.max;
-		},
-		readyForAction : function() {
-			if (this.right) {
-				return this.active.bounds.x <= this.actionRange;
-			}
-			else {
-				return this.active.bounds.x >= this.actionRange;
-			}
-		},
-		update : function(x_, y_) {	
-			if (this.moveActive || this.active.bounds.contains(x_, y_)) {
-				this.moveActive = true;		
-				var positionFunc = this.getPositionFunc();
-				this.active.bounds.x = positionFunc(this.initial.activeX, x_);
-
-				if (y_ < this.active.bounds.y) {
-					this.reset();
-				}
-				if (this.readyForAction()) {
-					this.action();
-				}
-			}
-		},
-		reset : function() {
-			this.moveActive = false;	
-			this.active.bounds.x = this.initial.activeX;
-		},
-		action : function() {
-			this.reset();
-			this.userAction();
-		}
-	};
+	RectStretchButton.prototype.getBounds = function() {
+		return this.debug;
+	}	
 	
 	/** MOVING SHAPE **/
 	var MovingShape = function(shape) {
