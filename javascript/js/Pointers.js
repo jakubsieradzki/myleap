@@ -80,6 +80,10 @@ myleap.pointers = (function(){
 	//** Tool Pointer **//
 	var ToolPointer = function(canvasElement, drawPointer) {
 		Pointer.call(this, canvasElement, drawPointer);
+
+		var that = this;
+
+		this.contextMenu = new myleap.components.ContextMenu([1]);
 		this.lastZone = "";
 		this.transitions = {
 			"touch": {
@@ -109,6 +113,12 @@ myleap.pointers = (function(){
 			return that.toCanvasCoords(frame, tool.stabilizedTipPosition);			
 		}
 		return this.defaultPosition();
+	};
+
+	ToolPointer.prototype.setAction = function(actionName, callback) {
+		if (actionName in this.transitions) {
+			this.transitions[actionName].action = callback;
+		}
 	};
 
 	return {

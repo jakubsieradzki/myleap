@@ -35,13 +35,13 @@ $(function() {
 	var handStateH = new myleap.handlers.HandStateHandler(canvasElement, true);
 	var bothHandsH = new myleap.handlers.BothHandsHanlder(canvasElement);
 
-	breadCrumb.addTile({'name' : 'BASIC'}, [navigationH, pointerH]);
-	breadCrumb.addTile({'name' : 'TOOLS'}, [toolsH, navigationH]);
-	breadCrumb.addTile({'name' : 'HAND STATE'}, [bothHandsH]);
 	breadCrumb.addTile({'name' : 'INFO'}, [visibleNavigationH, infoH]);
+	breadCrumb.addTile({'name' : 'FINGERS'}, [navigationH, pointerH]);
 	breadCrumb.addTile({'name' : 'GRAB'}, [grabH, new NavigationHandler(canvasElement, breadCrumb, palmPointer)]);
 	breadCrumb.addTile({'name' : 'RANGE'}, [touchH, navigationH]);
 	breadCrumb.addTile({'name' : 'PINCH'}, [pinchH, navigationH]);
+	breadCrumb.addTile({'name' : 'TOOLS'}, [toolsH, navigationH]);
+	// breadCrumb.addTile({'name' : 'HAND STATE'}, [bothHandsH]);
 
 	breadCrumb.update();	
 })

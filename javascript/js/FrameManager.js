@@ -506,10 +506,23 @@ myleap.handlers = (function() {
 
 			this.fence = new myleap.components.Fence();
 
+			this.stateHandler.setFunction("hand-closed", function(frame) {
+				var coords = that.toolPointer.fromFrame(frame);
+				that.fence.addSegment(new paper.Point(coords[0], coords[1]));
+			});
 			this.stateHandler.setFunctionOnce("hand-closed", function(frame) {
 				var coords = that.toolPointer.fromFrame(frame);
 				that.fence.addPost(new paper.Point(coords[0], coords[1]));
-			});	
+			});
+			this.stateHandler.setFunctionOnce("hand-opened", function(frame) {
+				var coords = that.toolPointer.fromFrame(frame);
+				that.fence.addPost(new paper.Point(coords[0], coords[1]));
+				that.fence.newPath();				
+			});
+
+			this.toolPointer.setAction("touch", function() {
+				that.fence.clear();
+			});
 		},
 		handle : function(frame) {
 			this.stateHandler.handle(frame);
@@ -528,25 +541,29 @@ myleap.handlers = (function() {
 				apply: function(hand) { return hand.grabStrength < 0.5; },				
 				updateState : function() { that.stateIndicator.setState("hand-opened"); },
 				fire: function(frame) {},
-				once: function(frame) {}
+				once: function(frame) {},
+				group: "hand"
 			},
 			"hand-closed" :  {
 				apply: function(hand) { return hand.grabStrength >= 0.5; },				
 				updateState : function() { that.stateIndicator.setState("hand-closed"); },
 				fire: function(frame) {},
-				once: function(frame) {}
+				once: function(frame) {},
+				group: "hand"
 			},
-			"pinky-pinch" :  {
-				apply: function(hand) {
-					var thumb = hand.thumb.tipPosition;
-					var pinky = hand.pinky.tipPosition;
-					var distance = Leap.vec3.distance(thumb, pinky);
-					return distance < 20; 
-				},				
-				updateState : function() {},
-				fire: function(frame) {},
-				once: function(frame) { console.log("PINKY"); }
-			},
+			// "pinky-pinch" :  {
+			// 	apply: function(hand) {
+			// 		var index = hand.indexFinger.proximal.direction();
+			// 		var middle = hand.middleFinger.proximal.direction();
+			// 		var dotProduct = Leap.vec3.dot(index, middle);
+			// 		// console.log(Math.acos(dotProduct));
+			// 		return Math.acos(dotProduct) < 0.1 && hand.grabStrength < 0.5; 
+			// 	},				
+			// 	updateState : function() {},
+			// 	fire: function(frame) {},
+			// 	once: function(frame) { console.log("PINKY"); },
+			// 	group: "finger"
+			// },
 		};
 	};
 
@@ -594,7 +611,7 @@ myleap.handlers = (function() {
 		init : function() {
 			var that = this;
 			this.drawPath = new paper.Path();
-			this.drawPath.strokeColor = 'blue';	
+			this.drawPath.strokeColor = 'blue';
 			this.pointer.createPoint();
 			this.handState.init();
 

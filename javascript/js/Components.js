@@ -137,23 +137,76 @@ myleap.components = (function() {
 	};
 
 	var Fence = function() {
+		this.paths = [];
+		this.posts = [];
 		this.path = new paper.Path();
 		this.path.strokeColor = "green";	
 	};
 
 	Fence.prototype = {
-		addPost: function(paperPoint) {
-			this.path.add(paperPoint);
+		addPost: function(paperPoint) {			
 			var post = new paper.Path.Circle(paperPoint, 10);
 			post.fillColor = "green";
+			this.posts[this.posts.length] = post;
+		},
+		addSegment : function(paperPoint) {
+			this.path.add(paperPoint);
+		},
+		newPath : function() {
+			this.paths[this.paths.length] = this.path;
+			this.path = new paper.Path();
+			this.path.strokeColor = "green";
+		},
+		clear: function() {
+			for (path in this.paths) {
+				this.paths[path].remove();
+			}
+			for (post in this.posts) {
+				this.posts[post].remove();
+			}
+			this.paths = [];
 		}
 	};
+
+	/** Context menu **/
+	var ContextMenu = function(options) {
+		this.options = options;
+		this.buttons = [];
+	
+	};
+
+	ContextMenu.prototype = {
+		setVisible : function(visible) {
+			for (button in this.buttons) {
+				button.visible = visible;
+			}
+		},
+		show : function(point) {			
+			// var baseAngle = 90 / this.options.length;
+			// var position = new paper.Point(50, 0);		
+			// var size = new paper.Size(50, 100);
+			// for (i = 0; i < this.options.length; i++) {			
+			// 	var firstPoint = point.add(position);
+			// 	var button = new myleap.components.RectStretchButton(point.add(position), size, -45);
+			// 	this.buttons[this.buttons.length] = button;
+			// 	var copy = firstPoint.clone();
+			// 	copy.rotate(-90, point);
+			// 	var buttonTwo = new myleap.components.RectStretchButton(point.add(copy), size, -135);
+			// }	
+			// this.setVisible(true);
+		},
+		hide : function() {
+			this.setVisible(false);
+		}
+	};
+
 
 	return {
 		RectStretchButton : RectStretchButton,
 		MovingShape : MovingShape,
 		StateIndicator : StateIndicator,
-		Fence : Fence
+		Fence : Fence,
+		ContextMenu : ContextMenu
 	};
 
 })();
