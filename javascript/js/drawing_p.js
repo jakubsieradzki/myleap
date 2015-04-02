@@ -18,13 +18,23 @@ $(function() {
 
 	var breadCrumb = new BreadCrumb({'containerID': "breadcrumb-container"}, frameManager);
 
+	// context
+	var htmlContext = {
+		canvasElement : canvasElement
+	};
+
 	// pointers
 	var fingerPointerVisible = new myleap.pointers.FingerPointer(canvasElement, true);	
 	var fingerPointer = new myleap.pointers.FingerPointer(canvasElement, false);
-	var palmPointer = new myleap.pointers.PalmPointer(canvasElement, false);
+	var palmPointer = new myleap.pointers.PalmPointer(canvasElement, true);
 
 	// handlers
-	var infoH = new InfoHanlder(canvasElement);
+	var infoH = new myleap.handlers2.InfoHandler(htmlContext, palmPointer, breadCrumb);
+	var fingersH = new myleap.handlers2.FingersHandler(htmlContext, fingerPointer, breadCrumb);
+
+
+	
+	// var infoH = new InfoHanlder(canvasElement);
 	var visibleNavigationH = new NavigationHandler(canvasElement, breadCrumb, fingerPointerVisible);
 	var navigationH = new NavigationHandler(canvasElement, breadCrumb, fingerPointer);
 	var pointerH = new PointerHanlder(canvasElement);
@@ -35,8 +45,8 @@ $(function() {
 	var handStateH = new myleap.handlers.HandStateHandler(canvasElement, true);
 	var bothHandsH = new myleap.handlers.BothHandsHanlder(canvasElement);
 
-	breadCrumb.addTile({'name' : 'INFO'}, [visibleNavigationH, infoH]);
-	breadCrumb.addTile({'name' : 'FINGERS'}, [navigationH, pointerH]);
+	breadCrumb.addTile({'name' : 'FINGERS'}, [fingersH]);
+	breadCrumb.addTile({'name' : 'INFO'}, [infoH]);
 	breadCrumb.addTile({'name' : 'GRAB'}, [grabH, new NavigationHandler(canvasElement, breadCrumb, palmPointer)]);
 	breadCrumb.addTile({'name' : 'RANGE'}, [touchH, navigationH]);
 	breadCrumb.addTile({'name' : 'PINCH'}, [pinchH, navigationH]);
