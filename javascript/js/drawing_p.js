@@ -13,7 +13,7 @@ $(function() {
 
 	var eventManager = new EventManager();
 
-	var frameManager = new FrameManager(breadCrumb);
+	var frameManager = new myleap.managers.FrameManager(breadCrumb);
 	frameManager.run();
 
 	var breadCrumb = new BreadCrumb({'containerID': "breadcrumb-container"}, frameManager);
@@ -27,30 +27,23 @@ $(function() {
 	var fingerPointerVisible = new myleap.pointers.FingerPointer(canvasElement, true);	
 	var fingerPointer = new myleap.pointers.FingerPointer(canvasElement, false);
 	var palmPointer = new myleap.pointers.PalmPointer(canvasElement, true);
+	var toolPointer = new myleap.pointers.ToolPointer(canvasElement, true);
 
 	// handlers
 	var infoH = new myleap.handlers2.InfoHandler(htmlContext, palmPointer, breadCrumb);
 	var fingersH = new myleap.handlers2.FingersHandler(htmlContext, fingerPointer, breadCrumb);
+	var grabH2 = new myleap.handlers2.GrabHandler(htmlContext, palmPointer, breadCrumb);
+	var touchH2 = new myleap.handlers2.TouchHandler(htmlContext, fingerPointerVisible, breadCrumb);
+	var pinchH2 = new myleap.handlers2.PinchHandler(htmlContext, fingerPointerVisible, breadCrumb);
+	var toolsH2 = new myleap.handlers2.ToolsHandler(htmlContext, toolPointer, breadCrumb);
 
 
-	
-	// var infoH = new InfoHanlder(canvasElement);
-	var visibleNavigationH = new NavigationHandler(canvasElement, breadCrumb, fingerPointerVisible);
-	var navigationH = new NavigationHandler(canvasElement, breadCrumb, fingerPointer);
-	var pointerH = new PointerHanlder(canvasElement);
-	var touchH = new TouchHandler(fingerPointerVisible)
-	var grabH = new GrabHandler(canvasElement, new myleap.pointers.PalmPointer(canvasElement, true));
-	var pinchH = new myleap.handlers.PinchHandler(canvasElement, fingerPointerVisible);
-	var toolsH = new myleap.handlers.ToolsHandler(canvasElement);
-	var handStateH = new myleap.handlers.HandStateHandler(canvasElement, true);
-	var bothHandsH = new myleap.handlers.BothHandsHanlder(canvasElement);
-
-	breadCrumb.addTile({'name' : 'FINGERS'}, [fingersH]);
 	breadCrumb.addTile({'name' : 'INFO'}, [infoH]);
-	breadCrumb.addTile({'name' : 'GRAB'}, [grabH, new NavigationHandler(canvasElement, breadCrumb, palmPointer)]);
-	breadCrumb.addTile({'name' : 'RANGE'}, [touchH, navigationH]);
-	breadCrumb.addTile({'name' : 'PINCH'}, [pinchH, navigationH]);
-	breadCrumb.addTile({'name' : 'TOOLS'}, [toolsH, navigationH]);
+	breadCrumb.addTile({'name' : 'FINGERS'}, [fingersH]);
+	breadCrumb.addTile({'name' : 'RANGE'}, [touchH2]);
+	breadCrumb.addTile({'name' : 'GRAB'}, [grabH2]);
+	breadCrumb.addTile({'name' : 'PINCH'}, [pinchH2]);
+	breadCrumb.addTile({'name' : 'TOOLS'}, [toolsH2]);
 	// breadCrumb.addTile({'name' : 'HAND STATE'}, [bothHandsH]);
 
 	breadCrumb.update();	

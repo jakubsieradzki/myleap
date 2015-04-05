@@ -184,16 +184,16 @@ myleap.components = (function() {
         },
         show: function(point) {
             // var baseAngle = 90 / this.options.length;
-            // var position = new paper.Point(50, 0);		
+            // var position = new paper.Point(50, 0);       
             // var size = new paper.Size(50, 100);
-            // for (i = 0; i < this.options.length; i++) {			
-            // 	var firstPoint = point.add(position);
-            // 	var button = new myleap.components.RectStretchButton(point.add(position), size, -45);
-            // 	this.buttons[this.buttons.length] = button;
-            // 	var copy = firstPoint.clone();
-            // 	copy.rotate(-90, point);
-            // 	var buttonTwo = new myleap.components.RectStretchButton(point.add(copy), size, -135);
-            // }	
+            // for (i = 0; i < this.options.length; i++) {          
+            //  var firstPoint = point.add(position);
+            //  var button = new myleap.components.RectStretchButton(point.add(position), size, -45);
+            //  this.buttons[this.buttons.length] = button;
+            //  var copy = firstPoint.clone();
+            //  copy.rotate(-90, point);
+            //  var buttonTwo = new myleap.components.RectStretchButton(point.add(copy), size, -135);
+            // }    
             // this.setVisible(true);
         },
         hide: function() {
@@ -229,12 +229,75 @@ myleap.components = (function() {
         this.left.update(point);
     };
 
+    var HandStateComponent = function(canvasElement, left) {
+        var that = this;
+        this.stateIndicator = new myleap.components.StateIndicator("state-indicator");
+        this.left = left;
+        this.lastState = "";
+        this.events = {
+            "hand-opened": {
+                apply: function(hand) {
+                    return hand.grabStrength < 0.5;
+                },
+                updateState: function() {
+                    that.stateIndicator.setState("hand-opened");
+                },
+                fire: function(frame) {},
+                once: function(frame) {},
+                group: "hand"
+            },
+            "hand-closed": {
+                apply: function(hand) {
+                    return hand.grabStrength >= 0.5;
+                },
+                updateState: function() {
+                    that.stateIndicator.setState("hand-closed");
+                },
+                fire: function(frame) {},
+                once: function(frame) {},
+                group: "hand"
+            }
+        };
+    };
+
+    HandStateComponent.prototype = {
+        update : function(frame) {
+            var hand = this.left ? myleap.utils.getLeftHand(frame) : getRightHand(frame);
+            if (hand === undefined) {
+                this.stateIndicator.clear();
+                return;
+            }           
+            for (eventName in this.events) {
+                var event = this.events[eventName];
+                if (event.apply(hand)) {
+                    event.updateState();
+                    event.fire(frame);
+                    if (this.lastState != eventName) {
+                        event.once(frame);
+                    }
+                    this.lastState = eventName;                 
+                }
+            }
+        },
+        setFunction : function(eventName, callback) {
+            if (eventName in this.events) {
+                this.events[eventName].fire = callback;
+            }
+        },
+        setFunctionOnce : function(eventName, callback) {
+            if (eventName in this.events) {
+                this.events[eventName].once = callback;
+            }
+        }
+    };
+
     return {
         RectStretchButton: RectStretchButton,
         MovingShape: MovingShape,
         StateIndicator: StateIndicator,
         Fence: Fence,
         NavigationComponent: NavigationComponent,
+        HandStateComponent: HandStateComponent,
         ContextMenu: ContextMenu
     };
 
