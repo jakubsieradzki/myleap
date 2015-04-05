@@ -468,6 +468,7 @@ myleap.handlers2 = (function() {
         NavigableHandler.call(this, htmlContext, pointer, navigator);
 
         this.maxLength = 200;
+        this.maxSpeed = 15;
     };
 
     ControlHandler.prototype = Object.create(NavigableHandler.prototype);
@@ -477,8 +478,8 @@ myleap.handlers2 = (function() {
         var ver = new paper.Path();
 
         this.dirs = {
-            "horizontal" : hor,
-            "vertical" : ver
+            "horizontal": hor,
+            "vertical": ver
         };
 
         var intialPoint = new paper.Point(-10, -10);
@@ -489,6 +490,10 @@ myleap.handlers2 = (function() {
             dirPath.add(intialPoint);
             dirPath.add(intialPoint);
         }
+
+        this.controlRect = new paper.Path.Rectangle(intialPoint, new paper.Size(50, 50));
+        this.controlRect.fillColor = 'purple';
+        this.controlRect.position = intialPoint;
     };
 
     ControlHandler.prototype._handle = function(frame) {
@@ -498,19 +503,34 @@ myleap.handlers2 = (function() {
         }
 
         var point = this.pointer.toPoint2D(frame);
-        var verticalValue = hand.pitch() * this.maxLength;
-        var horizontalValue = hand.roll() * this.maxLength;
+        var pitch = hand.pitch();
+        var roll = hand.roll();
+
+        this._updateRectangle(point, pitch, roll);
+        this._updateDirections(this.controlRect.position, pitch, roll);
+    };
+
+    ControlHandler.prototype._updateDirections = function(point, pitch, roll) {
+        var verticalValue = pitch * this.maxLength;
+        var horizontalValue = -(roll * this.maxLength);
 
         for (dir in this.dirs) {
             var dirPath = this.dirs[dir];
-            // dirPath.remove();
             dirPath.firstSegment.point = point;
         }
-
-
-        this.dirs["horizontal"].lastSegment.point = new paper.Point(point.x + horizontalValue, point.y);
+        this.dirs["horizontal"].lastSegment.point = new paper.Point(point.x + horizontalValue, point.y);        
         this.dirs["vertical"].lastSegment.point = new paper.Point(point.x, point.y + verticalValue);
     };
+
+    ControlHandler.prototype._updateRectangle = function(point, pitch, roll) {
+        var horizontalValue = -(roll * this.maxSpeed);
+        var verticalValue = pitch * this.maxSpeed;
+
+        this.controlRect.position.x += horizontalValue;
+        this.controlRect.position.y += verticalValue;
+    };
+
+
 
     /* Objects */
     return {
