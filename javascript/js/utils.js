@@ -15,6 +15,13 @@ myleap.utils = {
 	},
 	getRightHand : function(frame) {
 		return this._getHand(frame, false);
+	},
+	getAnyHand : function(frame) {
+		var right = this.getRightHand(frame);
+		if (right === undefined) {
+			return this.getLeftHand(frame);
+		}
+		return right;
 	}
 
 };

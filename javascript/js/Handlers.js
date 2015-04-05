@@ -47,7 +47,7 @@ myleap.handlers2 = (function() {
         this.pitchValue = new paper.PointText(zero);
         this.rollValue = new paper.PointText(zero);
         this.handConfidence = new paper.PointText(zero);
-    }
+    };
     InfoHandler.prototype = Object.create(NavigableHandler.prototype);
     InfoHandler.prototype._init = function() {
         var that = this;
@@ -463,6 +463,55 @@ myleap.handlers2 = (function() {
         this.stateHandler.update(frame);
     };
 
+    /* ControlHandler */
+    var ControlHandler = function(htmlContext, pointer, navigator) {
+        NavigableHandler.call(this, htmlContext, pointer, navigator);
+
+        this.maxLength = 200;
+    };
+
+    ControlHandler.prototype = Object.create(NavigableHandler.prototype);
+
+    ControlHandler.prototype._init = function() {
+        var hor = new paper.Path();
+        var ver = new paper.Path();
+
+        this.dirs = {
+            "horizontal" : hor,
+            "vertical" : ver
+        };
+
+        var intialPoint = new paper.Point(-10, -10);
+        for (dir in this.dirs) {
+            var dirPath = this.dirs[dir];
+            dirPath.strokeColor = 'red';
+            dirPath.strokeWidth = 4;
+            dirPath.add(intialPoint);
+            dirPath.add(intialPoint);
+        }
+    };
+
+    ControlHandler.prototype._handle = function(frame) {
+        var hand = myleap.utils.getAnyHand(frame);
+        if (hand === undefined) {
+            return;
+        }
+
+        var point = this.pointer.toPoint2D(frame);
+        var verticalValue = hand.pitch() * this.maxLength;
+        var horizontalValue = hand.roll() * this.maxLength;
+
+        for (dir in this.dirs) {
+            var dirPath = this.dirs[dir];
+            // dirPath.remove();
+            dirPath.firstSegment.point = point;
+        }
+
+
+        this.dirs["horizontal"].lastSegment.point = new paper.Point(point.x + horizontalValue, point.y);
+        this.dirs["vertical"].lastSegment.point = new paper.Point(point.x, point.y + verticalValue);
+    };
+
     /* Objects */
     return {
         InfoHandler: InfoHandler,
@@ -470,6 +519,7 @@ myleap.handlers2 = (function() {
         GrabHandler: GrabHandler,
         TouchHandler: TouchHandler,
         PinchHandler: PinchHandler,
-        ToolsHandler: ToolsHandler
+        ToolsHandler: ToolsHandler,
+        ControlHandler: ControlHandler
     };
 })();

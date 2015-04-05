@@ -36,8 +36,10 @@ $(function() {
 	var touchH2 = new myleap.handlers2.TouchHandler(htmlContext, fingerPointerVisible, breadCrumb);
 	var pinchH2 = new myleap.handlers2.PinchHandler(htmlContext, fingerPointerVisible, breadCrumb);
 	var toolsH2 = new myleap.handlers2.ToolsHandler(htmlContext, toolPointer, breadCrumb);
+	var controlH = new myleap.handlers2.ControlHandler(htmlContext, palmPointer, breadCrumb);
 
 
+	breadCrumb.addTile({'name' : 'CONTROL'}, [controlH]);
 	breadCrumb.addTile({'name' : 'INFO'}, [infoH]);
 	breadCrumb.addTile({'name' : 'FINGERS'}, [fingersH]);
 	breadCrumb.addTile({'name' : 'RANGE'}, [touchH2]);

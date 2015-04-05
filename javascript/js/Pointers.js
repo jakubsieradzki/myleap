@@ -36,6 +36,10 @@ myleap.pointers = (function() {
             this._updatePoint(result);
             return result;
         },
+        toPoint2D : function(frame) {
+            var result = this.fromFrameInner(frame);
+            return new paper.Point(result[0], result[1]);
+        },
         _updatePoint: function(coords) {
             if (this.drawPointer) {
                 this.point.position.x = coords[0];
