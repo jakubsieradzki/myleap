@@ -32,10 +32,61 @@
 	<img src="img/waldo.jpg" id="waldo-image">
 	<div id="intructions-text" class="text">
 		<div id="control">
-			<p>Ilość rąk: jedna</p>
-
-			Sterowanie obiektem przy pomocy wychyleń ręki. Na ekranie rysowane są wektora obrazujące prędkość ruchu
+			<div class="section">Hands</div>
+			<div class="value">One hand. Left or Right.</div>
+			<div class="section">Navigation pointer</div>
+			<div class="value">Palm position</div>
+			<div class="section">Instruction</div>		
+			<div class="value">Control purple square with hand pitch and roll. Red lines represents speed vectors.</div>
 		</div>
+		<div id="info">
+			<div class="section">Hands</div>
+			<div class="value">One or both hands.</div>
+			<div class="section">Navigation pointer</div>
+			<div class="value">Palm position</div>
+			<div class="section">Instruction</div>		
+			<div class="value">Display basic information</div>
+		</div>	
+		<div id="fingers">
+			<div class="section">Hands</div>
+			<div class="value">One or both hands.</div>
+			<div class="section">Navigation pointer</div>
+			<div class="value">Pointer finger position</div>
+			<div class="section">Instruction</div>		
+			<div class="value">Draws pointer for each visible finger in frame.</div>
+		</div>
+		<div id="range">
+			<div class="section">Hands</div>
+			<div class="value">One hand. Left or Right.</div>
+			<div class="section">Navigation pointer</div>
+			<div class="value">Pointer finger position</div>
+			<div class="section">Instruction</div>		
+			<div class="value">Use pointer finger to select shape. Select by moving finger away from yourself (click gesture). Touching virtual plane.</div>
+		</div>
+		<div id="grab">
+			<div class="section">Hands</div>
+			<div class="value">One hand. Left or Right.</div>
+			<div class="section">Navigation pointer</div>
+			<div class="value">Palm position</div>
+			<div class="section">Instruction</div>		
+			<div class="value">Select by clenching fist when pointer is above shape.</div>
+		</div>
+		<div id="pinch">
+			<div class="section">Hands</div>
+			<div class="value">One hand. Left or Right.</div>
+			<div class="section">Navigation pointer</div>
+			<div class="value">Pointer finger position</div>
+			<div class="section">Instruction</div>		
+			<div class="value">Move image with your fingers extended. Zoom in and zoom out with pointer finger and thumb (pinch gesture)</div>
+		</div>
+		<div id="tools">
+			<div class="section">Hands</div>
+			<div class="value">Both hands. Right hand holding tool (e.g. pen, pencil).</div>
+			<div class="section">Navigation pointer</div>
+			<div class="value">Tool finger position</div>
+			<div class="section">Instruction</div>		
+			<div class="value">Use tool to draw. Drawing is enabled when left hand is clenched and disabled otherwise. 'Click' with tool to remove drawing</div>
+		</div>		
 	</div>
 
 <script src="https://js.leapmotion.com/leap-0.6.4.js"></script>

@@ -39,14 +39,23 @@ $(function() {
 	var toolsH2 = new myleap.handlers2.ToolsHandler(htmlContext, toolPointer, breadCrumb);
 	var controlH = new myleap.handlers2.ControlHandler(htmlContext, palmPointer, breadCrumb);
 
+	// instructions
 	var controlInstruction = $('#intructions-text #control').html();
+	var infoInstruction = $('#intructions-text #info').html();
+	var fingersInstruction = $('#intructions-text #fingers').html();
+	var rangeInstruction = $('#intructions-text #range').html();
+	var grabInstruction = $('#intructions-text #grab').html();
+	var pinchInstruction = $('#intructions-text #pinch').html();
+	var toolsInstruction = $('#intructions-text #tools').html();
+
+
+	breadCrumb.addTile({'name' : 'Info', 'instruction' : infoInstruction}, [infoH]);
+	breadCrumb.addTile({'name' : 'Fingers', 'instruction' : fingersInstruction}, [fingersH]);
+	breadCrumb.addTile({'name' : 'Range', 'instruction' : rangeInstruction}, [touchH2]);
+	breadCrumb.addTile({'name' : 'Grab', 'instruction' : grabInstruction}, [grabH2]);
+	breadCrumb.addTile({'name' : 'Pinch', 'instruction' : pinchInstruction}, [pinchH2]);
 	breadCrumb.addTile({'name' : 'Control', 'instruction' : controlInstruction}, [controlH]);
-	breadCrumb.addTile({'name' : 'Info', 'instruction' : 'wave info'}, [infoH]);
-	breadCrumb.addTile({'name' : 'Fingers', 'instruction' : 'change fingers'}, [fingersH]);
-	breadCrumb.addTile({'name' : 'Range', 'instruction' : 'clean ranve'}, [touchH2]);
-	breadCrumb.addTile({'name' : 'Grab', 'instruction' : 'grab me'}, [grabH2]);
-	breadCrumb.addTile({'name' : 'Pinch', 'instruction' : 'pinch wally'}, [pinchH2]);
-	breadCrumb.addTile({'name' : 'Tools', 'instruction' : 'repair tool'}, [toolsH2]);
+	breadCrumb.addTile({'name' : 'Tools', 'instruction' : toolsInstruction}, [toolsH2]);
 	// breadCrumb.addTile({'name' : 'HAND STATE'}, [bothHandsH]);
 
 	breadCrumb.update();	

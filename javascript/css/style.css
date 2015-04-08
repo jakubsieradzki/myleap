@@ -20,6 +20,15 @@ p {
 	display: none;
 }
 
+.instruction-content .section {
+	margin-top: 15px;
+	font-weight: bold;	
+}
+
+.instruction-content .value {
+	color: #7f7f7f;
+}
+
 table.info {
 	min-width: 200px;
 	float: left;
@@ -82,7 +91,7 @@ th.info-header {
 .title {
 	font-family: Helvetica Neue,Helvetica,Arial,sans-serif; 
 	font-size: 23px;
-	font-weight: bold;
+	font-weight: bolder;
 	border-bottom: 1px solid rgb(200, 200, 200);
 }
 
