@@ -482,7 +482,7 @@ myleap.handlers2 = (function() {
             "vertical": ver
         };
 
-        var intialPoint = new paper.Point(-10, -10);
+        var intialPoint = new paper.Point(drawingWidth/2, drawingHeight/2);
         for (dir in this.dirs) {
             var dirPath = this.dirs[dir];
             dirPath.strokeColor = 'red';
