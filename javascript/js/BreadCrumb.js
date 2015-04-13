@@ -41,6 +41,13 @@ BreadCrumb.prototype.previous = function() {
 	}
 }
 
+BreadCrumb.prototype.set = function (index) {
+	if (index < this.tiles.length && index >= 0) {
+		this.currentIdx = index;
+		this.update();
+	}
+}
+
 BreadCrumb.prototype.update = function() {	
 	this.tiles.forEach(function(tile) {
 		tile.navigation.removeClass(ACTIVE)		

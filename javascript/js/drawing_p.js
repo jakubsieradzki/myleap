@@ -7,11 +7,7 @@ $(function() {
 	canvasElement.width  = drawingWidth;
 	canvasElement.height = drawingHeight;
 
-	paper.setup(canvasElement);
-
-	var infoParent = document.getElementById("info-parent");
-
-	var eventManager = new EventManager();
+	paper.setup(canvasElement);	
 
 	var frameManager = new myleap.managers.FrameManager(breadCrumb);
 	frameManager.run();
@@ -55,35 +51,13 @@ $(function() {
 	breadCrumb.addTile({'name' : 'Grab', 'instruction' : grabInstruction}, [grabH2]);
 	breadCrumb.addTile({'name' : 'Pinch', 'instruction' : pinchInstruction}, [pinchH2]);
 	breadCrumb.addTile({'name' : 'Control', 'instruction' : controlInstruction}, [controlH]);
-	breadCrumb.addTile({'name' : 'Tools', 'instruction' : toolsInstruction}, [toolsH2]);
-	// breadCrumb.addTile({'name' : 'HAND STATE'}, [bothHandsH]);
+	breadCrumb.addTile({'name' : 'Tools', 'instruction' : toolsInstruction}, [toolsH2]);	
 
-	breadCrumb.update();	
+	breadCrumb.update();
+
+	$('.nav-item').on('click', function(event) {
+		var index = $(event.target).index();		
+		breadCrumb.set(index);
+		paper.view.draw();
+	});
 })
-
-
-function toCanvasCoords(normalizedPosition) {
-	var canvasX = drawingWidth * normalizedPosition[0];
-    var canvasY = drawingHeight * (1 - normalizedPosition[1]);
-
-    return [canvasX, canvasY];
-}
-
-function handleMouse(event) {	
-	var x = event.e.clientX;
-	var y = event.e.clientY;
-
-	positionInfo.addValue("X", x);
-	positionInfo.addValue("Y", y);
-	
-	var point = new fabric.Point(x,y);
-	if (menu.containsPoint(point)) {
-		menu.set({fill: 'blue'});
-	}
-	else {
-		menu.set({fill: 'red'});
-	}
-
-	eventManager.update(point);
-	fabricCanvas.renderAll();
-}

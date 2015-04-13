@@ -69,12 +69,14 @@ th.info-header {
 }
 
 .nav-item:hover {
-	cursor: pointer;	
+	cursor: pointer;
+	background-color: #75C1FF;	
+	color: #FFF;
 }
 
 .nav-item.active {
-	background-color: #75C1FF;	
-	color: white;	
+	background-color: #75C1FF;
+	color: #FFF;
 }
 
 #instruction-container {
