@@ -5,7 +5,7 @@ myleap.components = (function() {
     /** ABSTRACT STRETCH BUTTON **/
     var AbstractStretchButton = function(basePosition, interactionLength, interactionAngle) {
         this.active = false;
-        this._thresh = 20;
+        this._thresh = 25;
         this.actionRange = interactionLength;
 
         this.basePosition = basePosition;
@@ -37,6 +37,10 @@ myleap.components = (function() {
             if (this.getBounds().contains(point)) {
                 this.active = true;
 
+                // update state                
+                this.getInteract().fillColor = myleap.colors.stretchButton.interact_active;
+
+                // compute distance
                 var userVector = this.basePosition.subtract(point);
                 var distance = (userVector.project(this.vector).length - this.vector.length) + this._thresh;
                 var moveDistance = Math.max(0, distance);
@@ -54,7 +58,10 @@ myleap.components = (function() {
             }
         },
         reset: function() {
-            this.getInteract().position = this.interactionPosition;
+            var interact = this.getInteract();
+            interact.position = this.interactionPosition;
+            interact.fillColor = myleap.colors.stretchButton.interact;
+
             this.getBounds().position = this.basePosition;
         }
     };
@@ -203,7 +210,7 @@ myleap.components = (function() {
 
     /* Navigation Component */
     var NavigationComponent = function(canvasElement, navigator) {
-        this.arrowWidth = 180;
+        this.arrowWidth = 150;
         this.arrowHeight = 100;
 
         var arrowX = canvasElement.offsetWidth - this.arrowWidth / 2;
@@ -306,6 +313,7 @@ myleap.components = (function() {
 myleap.colors = {
     stretchButton: {
         base: "#007CE8",
-        interact: "#4DACFF"
+        interact: "#4DACFF",
+        interact_active: "#FF9537"
     }
 };
